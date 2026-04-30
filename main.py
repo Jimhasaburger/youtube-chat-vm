@@ -1,38 +1,53 @@
 import pytchat
-import time
 import threading
-from flask import Flask
+from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
 
-video_id = "u7kIh97FaJs"
-chat = pytchat.create(video_id=video_id)
+VIDEO_ID = "u7kIh97FaJs"
+chat_history = []
 
-# check if its a replay
-if chat.is_replay():
-    print("UPDATE VIDEO ID")
-    exit()
+def fetch_chat():
+    global chat_history
+    chat = pytchat.create(video_id=VIDEO_ID)
+    
+    if chat.is_replay():
+        print("UPDATE THE VIDEO ID")
+        return
 
-def check_chat():
-    for c in chat.get().sync_items():
-        print(f"{c.datetime} {c.author.name} {c.message}")
-
-def main():
-    try:
-        while True:
-            check_chat()
-            time.sleep(2) # every two seconds
+    while chat.is_alive():
+        for c in chat.get().sync_items():
+            msg_data = {
+                "user": c.author.name,
+                "text": c.message,
+                "pfp_url": c.author.imageUrl,
+                "is_owner": c.author.isChatOwner,
+                "is_moderator": c.author.isChatModerator,
+                "platform": "youtube",
+                "timestamp": c.datetime
+            }
+            chat_history.append(msg_data)
+            if len(chat_history) > 100:
+                chat_history.pop(0)
             
-    except KeyboardInterrupt:
-        # Allows for a graceful exit when you press Ctrl+C
-        print("\nClosed.")
+            print(f"{c.datetime} {c.author.name}: {c.message}")
 
 @app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+def index():
+    return render_template("chat.html")
+
+@app.route("/chatjson")
+def chatjson():
+    return jsonify({
+        "messages": chat_history,
+        "show_pfp": True,
+        "show_platform_icon": False,
+        "status": "Connected"
+    })
 
 if __name__ == "__main__":
-    chat_thread = threading.Thread(target=check_chat, daemon=True)
-    chat_thread.start()
+
+    thread = threading.Thread(target=fetch_chat, daemon=True)
+    thread.start()
 
     app.run(debug=True, use_reloader=False)

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <style>
+        body {
+            background: rgba(0, 0, 0, .55);
+            color: white;
+            font-family: monospace;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
+        }
+        .msg { margin: 4px 0; }
+        .msg-row { display: flex; align-items: flex-start; gap: 8px; }
+        .msg-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .msg-content { flex: 1; min-width: 0; word-wrap: break-word; }
+        .system { color: #00ffaa; font-weight: bold; }
+        .console { color: #ffb347; font-weight: bold; }
+        .user { font-weight: bold; }
+        .chat-image {
+            max-width: 280px;
+            max-height: 180px;
+            display: block;
+            margin-top: 4px;
+            border-radius: 6px;
+        }
+        #chat {
+            height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        #chat::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+<div id="chat"></div>
+
+<script>
+function colorFromUsername(name) {
+    let hash = 0;
+    const text = String(name || "").toLowerCase();
+    for (let i = 0; i < text.length; i++) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 75%, 65%)`;
+}
+
+function escapeHtml(value) {
+    const div = document.createElement("div");
+    div.innerText = String(value ?? "");
+    return div.innerHTML;
+}
+
+function renderMessageText(text) {
+    const raw = String(text ?? "");
+    const urlRegex = /(https?:\/\/[^\s]+)/gi;
+    let html = "";
+    let lastIndex = 0;
+    let match;
+    while ((match = urlRegex.exec(raw)) !== null) {
+        const url = match[0];
+        const idx = match.index;
+        html += escapeHtml(raw.slice(lastIndex, idx));
+        const safeUrl = escapeHtml(url);
+        html += `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
+        html += `<img class="chat-image" src="${safeUrl}" alt="chat image" loading="lazy" onerror="this.remove()">`;
+        lastIndex = idx + url.length;
+    }
+    html += escapeHtml(raw.slice(lastIndex));
+    return html;
+}
+
+async function update() {
+    try {
+        let r = await fetch("/chatjson");
+        let d = await r.json();
+
+        const renderKey = JSON.stringify(d.messages);
+        if (window.__lastRenderKey === renderKey) return;
+        window.__lastRenderKey = renderKey;
+
+        const chatEl = document.getElementById("chat");
+        const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 50;
+
+        let html = "";
+        d.messages.forEach(m => {
+            if (m.kind === "console") {
+                const consoleUser = escapeHtml(m.user || "Console");
+                html += `<div class="msg console">[CONSOLE] ${consoleUser}: ${escapeHtml(m.text)}</div>`;
+            } else if (m.system) {
+                html += `<div class="msg system">[SYSTEM] ${escapeHtml(m.text)}</div>`;
+            } else {
+                const msgClasses = `msg ${m.queued ? "queued" : ""}`;
+                let userColor = m.queued ? "#9a9a9a" : colorFromUsername(m.user);
+                let userWeight = "900";
+                
+                if (m.is_owner) {
+                    userColor = "#ffdf3a";
+                } else if (m.is_moderator) {
+                    userColor = "#50a5ff"; // Standard mod blue
+                }
+
+                const showPfp = Boolean(d.show_pfp);
+                const hasPfp = Boolean(m.pfp_url);
+                const avatarHtml = (showPfp && hasPfp)
+                    ? `<img class="msg-avatar" src="${escapeHtml(m.pfp_url)}" alt="" loading="lazy">`
+                    : "";
+
+                html += `<div class="${msgClasses}">
+                            <div class="msg-row">
+                                ${avatarHtml}
+                                <div class="msg-content">
+                                    <span class="user" style="color:${userColor};font-weight:${userWeight}">${escapeHtml(m.user)}</span>: ${renderMessageText(m.text)}
+                                </div>
+                            </div>
+                         </div>`;
+            }
+        });
+
+        chatEl.innerHTML = html;
+        if (nearBottom) {
+            chatEl.scrollTop = chatEl.scrollHeight;
+        }
+    } catch (e) {
+        console.error("Fetch failed", e);
+    }
+}
+
+setInterval(update, 1000);
+</script>
+</body>
+</html>
