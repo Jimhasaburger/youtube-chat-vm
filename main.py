@@ -1,5 +1,6 @@
 import pytchat
 import time
+import threading
 from flask import Flask
 
 app = Flask(__name__)
@@ -31,4 +32,7 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 if __name__ == "__main__":
-    main()
+    chat_thread = threading.Thread(target=check_chat, daemon=True)
+    chat_thread.start()
+
+    app.run(debug=True, use_reloader=False)
