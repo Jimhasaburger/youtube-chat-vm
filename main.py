@@ -1,7 +1,10 @@
 import pytchat
 import time
+from flask import Flask
 
-video_id = "Kz3hYIzEYec"
+app = Flask(__name__)
+
+video_id = "u7kIh97FaJs"
 chat = pytchat.create(video_id=video_id)
 
 # check if its a replay
@@ -22,6 +25,10 @@ def main():
     except KeyboardInterrupt:
         # Allows for a graceful exit when you press Ctrl+C
         print("\nClosed.")
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
 
 if __name__ == "__main__":
     main()
