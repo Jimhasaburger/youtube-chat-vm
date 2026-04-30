@@ -1,7 +1,13 @@
 import pytchat
 import time
 
-chat = pytchat.create(video_id="Kz3hYIzEYec")
+video_id = "Kz3hYIzEYec"
+chat = pytchat.create(video_id=video_id)
+
+# check if its a replay
+if chat.is_replay():
+    print("UPDATE VIDEO ID")
+    exit()
 
 def check_chat():
     for c in chat.get().sync_items():
@@ -16,5 +22,6 @@ def main():
     except KeyboardInterrupt:
         # Allows for a graceful exit when you press Ctrl+C
         print("\nClosed.")
+
 if __name__ == "__main__":
     main()
