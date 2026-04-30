@@ -22,8 +22,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .msg-content { flex: 1; min-width: 0; word-wrap: break-word; }
-        .system { color: #00ffaa; font-weight: bold; }
-        .console { color: #ffb347; font-weight: bold; }
         .user { font-weight: bold; }
         .chat-image {
             max-width: 280px;
@@ -44,6 +42,8 @@
 <div id="chat"></div>
 
 <script>
+let renderedIds = new Set();
+
 function colorFromUsername(name) {
     let hash = 0;
     const text = String(name || "").toLowerCase();
@@ -84,58 +84,40 @@ async function update() {
     try {
         let r = await fetch("/chatjson");
         let d = await r.json();
-
-        const renderKey = JSON.stringify(d.messages);
-        if (window.__lastRenderKey === renderKey) return;
-        window.__lastRenderKey = renderKey;
-
         const chatEl = document.getElementById("chat");
-        const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 50;
+        const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 100;
 
-        let html = "";
         d.messages.forEach(m => {
-            if (m.kind === "console") {
-                const consoleUser = escapeHtml(m.user || "Console");
-                html += `<div class="msg console">[CONSOLE] ${consoleUser}: ${escapeHtml(m.text)}</div>`;
-            } else if (m.system) {
-                html += `<div class="msg system">[SYSTEM] ${escapeHtml(m.text)}</div>`;
-            } else {
-                const msgClasses = `msg ${m.queued ? "queued" : ""}`;
-                let userColor = m.queued ? "#9a9a9a" : colorFromUsername(m.user);
-                let userWeight = "900";
+            if (!renderedIds.has(m.id)) {
+                const msgDiv = document.createElement("div");
+                msgDiv.className = "msg";
+                let userColor = colorFromUsername(m.user);
+                if (m.is_owner) userColor = "#ffdf3a";
+                else if (m.is_moderator) userColor = "#50a5ff";
+
+                const avatarHtml = d.show_pfp ? `<img class="msg-avatar" src="${m.pfp_url}" onerror="this.remove()">` : "";
+
+                msgDiv.innerHTML = `
+                    <div class="msg-row">
+                        ${avatarHtml}
+                        <div class="msg-content">
+                            <span class="user" style="color:${userColor}">${escapeHtml(m.user)}</span>: 
+                            ${renderMessageText(m.text)}
+                        </div>
+                    </div>`;
                 
-                if (m.is_owner) {
-                    userColor = "#ffdf3a";
-                } else if (m.is_moderator) {
-                    userColor = "#50a5ff"; // Standard mod blue
-                }
-
-                const showPfp = Boolean(d.show_pfp);
-                const hasPfp = Boolean(m.pfp_url);
-                const avatarHtml = (showPfp && hasPfp)
-                    ? `<img class="msg-avatar" src="${escapeHtml(m.pfp_url)}" alt="" loading="lazy">`
-                    : "";
-
-                html += `<div class="${msgClasses}">
-                            <div class="msg-row">
-                                ${avatarHtml}
-                                <div class="msg-content">
-                                    <span class="user" style="color:${userColor};font-weight:${userWeight}">${escapeHtml(m.user)}</span>: ${renderMessageText(m.text)}
-                                </div>
-                            </div>
-                         </div>`;
+                chatEl.appendChild(msgDiv);
+                renderedIds.add(m.id);
             }
         });
 
-        chatEl.innerHTML = html;
         if (nearBottom) {
             chatEl.scrollTop = chatEl.scrollHeight;
         }
     } catch (e) {
-        console.error("Fetch failed", e);
+        console.error(e);
     }
 }
-
 setInterval(update, 1000);
 </script>
 </body>
