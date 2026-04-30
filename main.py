@@ -9,7 +9,7 @@ chat_history = []
 
 def fetch_chat():
     global chat_history
-    chat = pytchat.create(video_id=VIDEO_ID)
+    chat = pytchat.create(video_id=VIDEO_ID, interruptable=False)
     
     if chat.is_replay():
         print("UPDATE THE VIDEO ID")
