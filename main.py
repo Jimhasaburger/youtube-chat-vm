@@ -1,7 +1,7 @@
 import pytchat
 import time
 
-chat = pytchat.create(video_id="uIx8l2xlYVY")
+chat = pytchat.create(video_id="Kz3hYIzEYec")
 
 def check_chat():
     chatdata = chat.get()
