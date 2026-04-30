@@ -4,8 +4,8 @@ import time
 chat = pytchat.create(video_id="Kz3hYIzEYec")
 
 def check_chat():
-    chatdata = chat.get()
-    print(chatdata.json())
+    for c in chat.get().sync_items():
+        print(f"{c.datetime} {c.author.name} {c.message}")
 
 def main():
     try:
