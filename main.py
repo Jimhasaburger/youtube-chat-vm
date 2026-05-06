@@ -5,6 +5,7 @@ import logging
 import uuid
 import virtualbox
 import time
+import json
 
 # -------------------- config ---------------
 print("enter your video id:")
@@ -26,6 +27,8 @@ app = Flask(__name__)
 chat_history = []
 seen_message_ids = set()
 
+with open('scancodes.json', 'r') as f:
+    KEY_MAP = json.load(f)
 def fetch_chat():
     global chat_history
     chat = pytchat.create(video_id=VIDEO_ID, interruptable=False)
@@ -88,11 +91,8 @@ def add_sys_message(message): # add system message
     chat_history.append(msg_data)
     print("System: " + message)
 
-def get_key_scancode(keyname): # uses json file
-    scancodesfile = keycodes.json
-    with open(scancodesfile, 'r') as f:
-        keycodes = json.load(f)
-    return keycodes.get(keyname.lower(), None)
+def get_key_scancode(keyname):
+    return KEY_MAP.get(keyname.lower(), None)
 
 def press_key(scancode_list):
     if not scancode_list:
