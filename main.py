@@ -1,6 +1,10 @@
 import pytchat
 import threading
 from flask import Flask, render_template, jsonify
+import logging
+
+log = logging.getLogger('werkzeug') # make flask shut up
+log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
