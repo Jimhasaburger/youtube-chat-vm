@@ -82,9 +82,12 @@ def get_key_scancode(keyname):
     }
     return keycodes.get(keyname.lower(), None)
 
-def press_key(key):
-    session.console.keyboard.put_scancode(key)
-    print("Pressing key: " + str(key))
+def press_key(key_code):
+    session.console.keyboard.put_scancodes([key_code])
+    time.sleep(0.05) 
+    session.console.keyboard.put_scancodes([key_code + 0x80])
+    
+    print(f"Pressed key: {key_code}")
 
 @app.route("/")
 def index():
