@@ -102,9 +102,16 @@ def add_sys_message(message): # add system message
 def get_key_scancode(keyname):
     return KEY_MAP.get(keyname.lower(), None)
 
-def press_key(scancode_list):
-    if not scancode_list:
+def press_key(scancode_input):
+    if not scancode_input:
         return
+    scancode_list = []
+    items_to_process = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+    for item in items_to_process:
+        if isinstance(item, list):
+            scancode_list.extend(item)
+        elif item is not None:
+            scancode_list.append(item)
     session.console.keyboard.put_scancodes(scancode_list)
     time.sleep(0.05)
     break_codes = []
