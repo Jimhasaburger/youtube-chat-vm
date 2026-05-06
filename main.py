@@ -84,6 +84,7 @@ def get_key_scancode(keyname):
 
 def press_key(key):
     session.console.keyboard.put_scancode(key)
+    print("Pressing key: " + str(key))
 
 @app.route("/")
 def index():
