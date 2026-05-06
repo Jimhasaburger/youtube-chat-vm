@@ -78,13 +78,12 @@ def add_sys_message(message): # add system message
 
 def get_key_scancode(keyname):
     keycodes = { # only win key right now
-    "win": 0xdb,
+    "win": 0x5B,
     }
     return keycodes.get(keyname.lower(), None)
 
 def press_key(key):
     session.console.keyboard.put_scancode(key)
-
 
 @app.route("/")
 def index():
