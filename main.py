@@ -4,7 +4,9 @@ from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
 
-VIDEO_ID = "u7kIh97FaJs"
+print("enter your video id:")
+VIDEO_ID = input()
+
 chat_history = []
 seen_message_ids = set()
 
@@ -26,10 +28,16 @@ def fetch_chat():
                 }
                 chat_history.append(msg_data)
                 seen_message_ids.add(c.id)
+                if  check_if_command(c.message):
+                    print("command: " + c.message)
                 
                 if len(chat_history) > 500:
                     old_msg = chat_history.pop(0)
                     seen_message_ids.discard(old_msg['id'])
+
+def check_if_command(message):
+    return message.startswith("!")
+
 
 @app.route("/")
 def index():
@@ -44,6 +52,6 @@ def chatjson():
     })
 
 if __name__ == "__main__":
-    thread = threading.Thread(target=fetch_chat, daemon=True)
+    thread = threading.Thread(target=fetch_chat, daemon=True) 
     thread.start()
     app.run(debug=True, use_reloader=False)
