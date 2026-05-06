@@ -57,6 +57,7 @@ def add_sys_message(message): # add a sys message to overlay!
     "text": message,
     }
     chat_history.append(msg_data)
+    print(message)
 
 @app.route("/")
 def index():
