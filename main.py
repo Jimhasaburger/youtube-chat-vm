@@ -76,6 +76,13 @@ def check_what_command(message):
                 press_key(get_key_scancode(key_name))
             else:
                 add_sys_message("Specify a key.")
+        case "!combo":
+            if args:
+                key_names = args
+                scancodes = [get_key_scancode(key_name) for key_name in key_names]
+                press_key(scancodes)
+            else:
+                add_sys_message("Specify at least one key.")
         case _:
             add_sys_message("Unknown Command!")
 
