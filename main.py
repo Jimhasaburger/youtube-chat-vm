@@ -83,24 +83,32 @@ def check_what_command(message):
                 press_key(scancodes)
             else:
                 add_sys_message("Specify at least one key.")
-        case _:
-            add_sys_message("Unknown Command!")
-            case "!type" | "!send":
+        case "!type":
             if args:
                 text_to_type = " ".join(args)
-                
                 for char in text_to_type:
                     scancode = get_key_scancode(char)
                     if scancode:
                         press_key(scancode)
-                        time.sleep(0.01)
-                if command == "!send":
-                    enter_scancode = get_key_scancode("enter")
-                    if enter_scancode:
-                        press_key(enter_scancode)
             else:
-                add_sys_message(f"Usage: {command} <text>")
+                add_sys_message("Usage: !type <text>")
 
+        case "!send":
+            if args:
+                text_to_type = " ".join(args)
+                for char in text_to_type:
+                    scancode = get_key_scancode(char)
+                    if scancode:
+                        press_key(scancode)
+                
+                # Press Enter after typing
+                enter_code = get_key_scancode("enter")
+                if enter_code:
+                    press_key(enter_code)
+            else:
+                add_sys_message("Usage: !send <text>")
+        case _:
+            add_sys_message("Unknown Command!")
 def add_sys_message(message): # add system message
     global chat_history
     msg_data = {
