@@ -29,6 +29,7 @@ seen_message_ids = set()
 
 with open('scancodes.json', 'r') as f:
     KEY_MAP = json.load(f)
+
 def fetch_chat():
     global chat_history
     chat = pytchat.create(video_id=VIDEO_ID, interruptable=False)
