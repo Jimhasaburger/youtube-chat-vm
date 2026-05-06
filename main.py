@@ -78,17 +78,25 @@ def add_sys_message(message): # add system message
     print("System: " + message)
 
 def get_key_scancode(keyname):
-    keycodes = { # only win key right now
-    "win": 0x5B,
+    keycodes = {
+        "win": [0xE0, 0x5B] 
     }
     return keycodes.get(keyname.lower(), None)
 
-def press_key(key_code):
-    session.console.keyboard.put_scancodes([key_code])
-    time.sleep(0.05) 
-    session.console.keyboard.put_scancodes([key_code + 0x80])
-    
-    print(f"Pressed key: {key_code}")
+def press_key(scancode_list):
+    if not scancode_list:
+        return
+    session.console.keyboard.put_scancodes(scancode_list)
+    time.sleep(0.05)
+    break_codes = []
+    for code in scancode_list:
+        if code == 0xE0:
+            break_codes.append(code)
+        else:
+            break_codes.append(code + 0x80)
+            
+    session.console.keyboard.put_scancodes(break_codes)
+    print(f"Sent scancodes: {scancode_list} and {break_codes}")
 
 @app.route("/")
 def index():
