@@ -46,9 +46,17 @@ def check_what_command(message):
     command = message.split()[0]
     match command:
         case "!help":
-            print("Hallo moto")
+            add_sys_message("hello!")
         case _:
-            print("Unknown command!")
+            add_sys_message("Unknown Command!")
+
+def add_sys_message(message): # add a sys message to overlay!
+    global chat_history
+    msg_data = {
+    "user": "System",
+    "text": message,
+    }
+    chat_history.append(msg_data)
 
 @app.route("/")
 def index():
