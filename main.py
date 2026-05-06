@@ -32,10 +32,10 @@ def fetch_chat():
                 }
                 chat_history.append(msg_data)
                 seen_message_ids.add(c.id)
-                if check_if_command(c.message) == True:
-                    check_what_command(c.message)
+                if check_if_command(c.message) == True: # checks if command
+                    check_what_command(c.message)       # checks which command
                 
-                if len(chat_history) > 500:
+                if len(chat_history) > 500:             # removes old messages
                     old_msg = chat_history.pop(0)
                     seen_message_ids.discard(old_msg['id'])
 
