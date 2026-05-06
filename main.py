@@ -73,4 +73,4 @@ def chatjson():
 if __name__ == "__main__":
     thread = threading.Thread(target=fetch_chat, daemon=True) 
     thread.start()
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=False, port=5000)
