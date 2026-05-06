@@ -9,14 +9,13 @@ import virtualbox
 print("enter your video id:")
 VIDEO_ID = input()
 VM_NAME = "windXP"
+# --------------------------------------------
 
-vbox_manager = virtualbox.Manager()
+vbox_manager = virtualbox.Manager() # vbox stuff
 vbox = vbox_manager.get_virtualbox()
-
-machine.lock_machine(session, virtualbox.library.LockType.shared)
-
-session = virtualbox.Session()
 machine = vbox.find_machine(VM_NAME)
+session = virtualbox.Session()
+machine.lock_machine(session, virtualbox.library.LockType.shared)
 
 log = logging.getLogger('werkzeug') # make flask shut up
 log.setLevel(logging.ERROR)
