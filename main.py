@@ -13,6 +13,8 @@ VM_NAME = "windXP"
 vbox_manager = virtualbox.Manager()
 vbox = vbox_manager.get_virtualbox()
 
+machine.lock_machine(session, virtualbox.library.LockType.shared)
+
 session = virtualbox.Session()
 machine = vbox.find_machine(VM_NAME)
 
