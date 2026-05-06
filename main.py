@@ -43,7 +43,7 @@ def check_if_command(message):
     return message.startswith("!")
 
 def check_what_command(message):
-    command = message.split()[0]
+    command = message.strip().lower().split()[0]
     match command:
         case "!help":
             add_sys_message("hello!")
