@@ -88,19 +88,10 @@ def add_sys_message(message): # add system message
     chat_history.append(msg_data)
     print("System: " + message)
 
-def get_key_scancode(keyname):
-    keycodes = {
-        "win": [0xE0, 0x5B],
-        "enter": [0x1C],
-        "esc": [0x01],
-        "space": [0x39],
-        "tab": [0x0F],
-        "backspace": [0x0E],
-        "up": [0xE0, 0x7E],
-        "down": [0xE0, 0x7D],
-        "left": [0xE0, 0x7B],
-        "right": [0xE0, 0x7C],
-    }
+def get_key_scancode(keyname): # uses json file
+    scancodesfile = keycodes.json
+    with open(scancodesfile, 'r') as f:
+        keycodes = json.load(f)
     return keycodes.get(keyname.lower(), None)
 
 def press_key(scancode_list):
