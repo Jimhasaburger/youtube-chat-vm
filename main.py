@@ -2,6 +2,7 @@ import pytchat
 import threading
 from flask import Flask, render_template, jsonify
 import logging
+import uuid
 
 log = logging.getLogger('werkzeug') # make flask shut up
 log.setLevel(logging.ERROR)
@@ -50,14 +51,18 @@ def check_what_command(message):
         case _:
             add_sys_message("Unknown Command!")
 
-def add_sys_message(message): # add a sys message to overlay!
+def add_sys_message(message): # add system message
     global chat_history
     msg_data = {
-    "user": "System",
-    "text": message,
+        "id": str(uuid.uuid4()),
+        "user": "System",
+        "text": message,
+        "pfp_url": "",
+        "is_owner": False,
+        "is_moderator": False
     }
     chat_history.append(msg_data)
-    print("system message: " + message)
+    print("System: " + message)
 
 @app.route("/")
 def index():
