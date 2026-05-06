@@ -3,14 +3,21 @@ import threading
 from flask import Flask, render_template, jsonify
 import logging
 import uuid
+import virtualbox
+
+# -------------------- config ---------------
+print("enter your video id:")
+VIDEO_ID = input()
+VM_NAME = "windXP"
+
+
+session = virtualbox.Session()
+machine = vbox.find_machine(VM_NAME)
 
 log = logging.getLogger('werkzeug') # make flask shut up
 log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
-
-print("enter your video id:")
-VIDEO_ID = input()
 
 chat_history = []
 seen_message_ids = set()
@@ -47,7 +54,9 @@ def check_what_command(message):
     command = message.strip().lower().split()[0]
     match command:
         case "!help":
-            add_sys_message("hello!")
+            add_sys_message("check description")
+        case "!winkey":
+            press_key(get_key_scancode("win"))
         case _:
             add_sys_message("Unknown Command!")
 
@@ -63,6 +72,16 @@ def add_sys_message(message): # add system message
     }
     chat_history.append(msg_data)
     print("System: " + message)
+
+def get_key_scancode(keyname):
+    keycodes = { # only win key right now
+    "win": 0xdb,
+    }
+    return keycodes.get(keyname.lower(), None)
+
+def press_key(key):
+    session.console.keyboard.put_scancode(key)
+
 
 @app.route("/")
 def index():
