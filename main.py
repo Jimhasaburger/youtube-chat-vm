@@ -42,6 +42,13 @@ def fetch_chat():
 def check_if_command(message):
     return message.startswith("!")
 
+def check_what_command(message):
+    command = message.split()[0]
+    match command:
+        case "!help":
+            print("Hallo moto")
+        case _:
+            print("Unknown command!")
 
 @app.route("/")
 def index():
