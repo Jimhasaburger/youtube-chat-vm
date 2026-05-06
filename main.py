@@ -55,12 +55,23 @@ def check_if_command(message):
     return message.startswith("!")
 
 def check_what_command(message):
-    command = message.strip().lower().split()[0]
+    parts = message.strip().split()
+    
+    if not parts:
+        return
+
+    command = parts[0].lower()
+    args = parts[1:]
+
     match command:
         case "!help":
             add_sys_message("check description")
-        case "!winkey":
-            press_key(get_key_scancode("win"))
+        case "!key":
+            if args:
+                key_name = args[0].lower()
+                press_key(get_key_scancode(key_name))
+            else:
+                add_sys_message("Specify a key.")
         case _:
             add_sys_message("Unknown Command!")
 
@@ -79,7 +90,16 @@ def add_sys_message(message): # add system message
 
 def get_key_scancode(keyname):
     keycodes = {
-        "win": [0xE0, 0x5B] 
+        "win": [0xE0, 0x5B],
+        "enter": [0x1C],
+        "esc": [0x01],
+        "space": [0x39],
+        "tab": [0x0F],
+        "backspace": [0x0E],
+        "up": [0xE0, 0x7E],
+        "down": [0xE0, 0x7D],
+        "left": [0xE0, 0x7B],
+        "right": [0xE0, 0x7C],
     }
     return keycodes.get(keyname.lower(), None)
 
