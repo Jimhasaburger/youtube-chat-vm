@@ -10,6 +10,8 @@ print("enter your video id:")
 VIDEO_ID = input()
 VM_NAME = "windXP"
 
+vbox_manager = virtualbox.Manager() 
+vbox = vbox_manager.vbox
 
 session = virtualbox.Session()
 machine = vbox.find_machine(VM_NAME)
