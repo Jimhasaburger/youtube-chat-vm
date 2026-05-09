@@ -8,9 +8,10 @@ import time
 import json
 
 # -------------------- config ---------------
-print("enter your video id:")
-VIDEO_ID = input()
-VM_NAME = "ycvm11 clone"
+# print("enter your video id:")
+# VIDEO_ID = input()
+VIDEO_ID = "QVkFShQix3A"
+VM_NAME = "ycvm11 Clone"
 # --------------------------------------------
 
 vbox_manager = virtualbox.Manager() # vbox stuff
