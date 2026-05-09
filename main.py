@@ -10,7 +10,7 @@ import json
 # -------------------- config ---------------
 print("enter your video id:")
 VIDEO_ID = input()
-VM_NAME = "windXP"
+VM_NAME = "ycvm11 clone"
 # --------------------------------------------
 
 vbox_manager = virtualbox.Manager() # vbox stuff
