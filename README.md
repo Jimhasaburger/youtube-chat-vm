@@ -7,5 +7,11 @@ yes but please credit me.
 # can i help?
 of course. use pull requests.
 
-# this isnt the one you use????
-i will use it. its just that this one isnt as good yet
+# setup
+get virtualbox. 
+you will need to run:
+```
+pip install virtualbox
+```
+then edit config.json
+and run the script.
