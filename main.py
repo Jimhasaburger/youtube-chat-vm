@@ -7,12 +7,12 @@ import virtualbox
 import time
 import json
 
-# -------------------- config ---------------
-# print("enter your video id:")
-# VIDEO_ID = input()
-VIDEO_ID = "QVkFShQix3A"
-VM_NAME = "ycvm11 Clone"
-# --------------------------------------------
+# edit this config file!!!!
+with open('config.json', 'r') as g:
+    CONFIG = json.load(g)
+
+VIDEO_ID = CONFIG.get('videoid')
+VM_NAME = CONFIG.get('vmname')
 
 vbox_manager = virtualbox.Manager() # vbox stuff
 vbox = vbox_manager.get_virtualbox()
