@@ -16,3 +16,6 @@ pip install virtualbox
 ```
 then edit config.json
 and run the script.
+
+# NOTICE:
+i may or may not turn this to LUA soon. i know lua more.
