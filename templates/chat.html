@@ -40,85 +40,113 @@
 </head>
 <body>
 <div id="chat"></div>
-
 <script>
-let renderedIds = new Set();
+    let renderedIds = new Set();
+    const MAX_MESSAGES = 100;
+    const chatEl = document.getElementById("chat");
 
-function colorFromUsername(name) {
-    let hash = 0;
-    const text = String(name || "").toLowerCase();
-    for (let i = 0; i < text.length; i++) {
-        hash = ((hash << 5) - hash) + text.charCodeAt(i);
-        hash |= 0;
-    }
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 75%, 65%)`;
-}
-
-function escapeHtml(value) {
-    const div = document.createElement("div");
-    div.innerText = String(value ?? "");
-    return div.innerHTML;
-}
-
-function renderMessageText(text) {
-    const raw = String(text ?? "");
-    const urlRegex = /(https?:\/\/[^\s]+)/gi;
-    let html = "";
-    let lastIndex = 0;
-    let match;
-    while ((match = urlRegex.exec(raw)) !== null) {
-        const url = match[0];
-        const idx = match.index;
-        html += escapeHtml(raw.slice(lastIndex, idx));
-        const safeUrl = escapeHtml(url);
-        html += `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
-        html += `<img class="chat-image" src="${safeUrl}" alt="chat image" loading="lazy" onerror="this.remove()">`;
-        lastIndex = idx + url.length;
-    }
-    html += escapeHtml(raw.slice(lastIndex));
-    return html;
-}
-
-async function update() {
-    try {
-        let r = await fetch("/chatjson");
-        let d = await r.json();
-        const chatEl = document.getElementById("chat");
-        const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 100;
-
-        d.messages.forEach(m => {
-            if (!renderedIds.has(m.id)) {
-                const msgDiv = document.createElement("div");
-                msgDiv.className = "msg";
-                let userColor = colorFromUsername(m.user);
-                if (m.is_owner) userColor = "#ffdf3a";
-                else if (m.is_moderator) userColor = "#50a5ff";
-
-                const avatarHtml = d.show_pfp ? `<img class="msg-avatar" src="${m.pfp_url}" onerror="this.remove()">` : "";
-
-                msgDiv.innerHTML = `
-                    <div class="msg-row">
-                        ${avatarHtml}
-                        <div class="msg-content">
-                            <span class="user" style="color:${userColor}">${escapeHtml(m.user)}</span>: 
-                            ${renderMessageText(m.text)}
-                        </div>
-                    </div>`;
-                
-                chatEl.appendChild(msgDiv);
-                renderedIds.add(m.id);
-            }
-        });
-
-        if (nearBottom) {
-            chatEl.scrollTop = chatEl.scrollHeight;
+    function colorFromUsername(name) {
+        let hash = 0;
+        const text = String(name || "").toLowerCase();
+        for (let i = 0; i < text.length; i++) {
+            hash = ((hash << 5) - hash) + text.charCodeAt(i);
+            hash |= 0;
         }
-    } catch (e) {
-        console.error(e);
+        const hue = Math.abs(hash) % 360;
+        return `hsl(${hue}, 75%, 65%)`;
     }
-}
-setInterval(update, 1000);
+    function renderMessageText(text) {
+        const raw = String(text ?? "");
+        const urlRegex = /(https?:\/\/[^\s]+)/gi;
+        let html = "";
+        let lastIndex = 0;
+        let match;
+        const sanitize = (str) => {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        };
+
+        while ((match = urlRegex.exec(raw)) !== null) {
+            const url = match[0];
+            html += sanitize(raw.slice(lastIndex, match.index));
+            const safeUrl = encodeURI(url);
+            html += `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${sanitize(url)}</a>`;
+            html += `<img class="chat-image" src="${safeUrl}" alt="chat image" loading="lazy" onerror="this.remove()">`;
+            lastIndex = match.index + url.length;
+        }
+        html += sanitize(raw.slice(lastIndex));
+        return html;
+    }
+
+    async function update() {
+        try {
+            const r = await fetch("/chatjson");
+            const d = await r.json();
+            const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 100;
+
+            d.messages.forEach(m => {
+                if (!renderedIds.has(m.id)) {
+                    const msgDiv = document.createElement("div");
+                    msgDiv.className = "msg";
+                    msgDiv.dataset.id = m.id;
+
+                    const row = document.createElement("div");
+                    row.className = "msg-row";
+
+                    if (d.show_pfp) {
+                        const img = document.createElement("img");
+                        img.className = "msg-avatar";
+                        img.src = m.pfp_url;
+                        img.onerror = () => img.remove();
+                        row.appendChild(img);
+                    }
+
+                    const content = document.createElement("div");
+                    content.className = "msg-content";
+
+                    let userColor = colorFromUsername(m.user);
+                    if (m.is_owner) userColor = "#ffdf3a";
+                    else if (m.is_moderator) userColor = "#50a5ff";
+
+                    const userSpan = document.createElement("span");
+                    userSpan.className = "user";
+                    userSpan.style.color = userColor;
+                    userSpan.textContent = m.user;
+                    
+                    content.appendChild(userSpan);
+                    content.append(": ");
+
+                    const textSpan = document.createElement("span");
+                    textSpan.innerHTML = renderMessageText(m.text);
+                    content.appendChild(textSpan);
+
+                    row.appendChild(content);
+                    msgDiv.appendChild(row);
+                    chatEl.appendChild(msgDiv);
+                    
+                    renderedIds.add(m.id);
+                }
+            });
+            while (chatEl.children.length > MAX_MESSAGES) {
+                const oldest = chatEl.firstChild;
+                renderedIds.delete(oldest.dataset.id);
+                chatEl.removeChild(oldest);
+            }
+
+            if (nearBottom) {
+                chatEl.scrollTop = chatEl.scrollHeight;
+            }
+        } catch (e) {
+            console.error("Chat update failed:", e);
+        }
+    }
+
+    async function poll() {
+        await update();
+        setTimeout(poll, 1000);
+    }
+    poll();
 </script>
 </body>
 </html>
