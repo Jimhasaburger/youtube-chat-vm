@@ -80,8 +80,12 @@ def check_what_command(message):
         case "!combo":
             if args:
                 key_names = args
-                scancodes = [get_key_scancode(key_name) for key_name in key_names]
-                press_key(scancodes)
+                scancodes = [code for key_name in key_names
+                   for code in (get_key_scancode(key_name) or [])]
+                if scancodes:
+                    press_key(scancodes)
+                else:
+                    add_sys_message("Unknown key in combo.")
             else:
                 add_sys_message("Specify at least one key.")
         case "!type":
