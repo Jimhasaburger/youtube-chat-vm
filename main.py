@@ -121,10 +121,8 @@ def check_what_command(message):
                 add_sys_message("Usage: !move <x> <y>")
         case "!click":
             click_mouse(1)
-            click_mouse(0)
         case "!rclick":
             click_mouse(2)
-            click_mouse(0)
         case _:
             add_sys_message("Unknown Command!")
 
@@ -181,6 +179,7 @@ def move_mouse(x, y):
 def click_mouse(type):
     # button_state: 0 (none), 1 (left click), 2 (right click), etc.
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=type)
+    session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=0) # unclick
 
 @app.route("/")
 def index():
