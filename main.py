@@ -136,6 +136,8 @@ def check_what_command(message):
             click_mouse(1)
         case "!rclick":
             click_mouse(2)
+        case "!mclick":
+            click_mouse(4)
         case _:
             add_sys_message("Unknown Command!")
 
@@ -181,12 +183,12 @@ def move_mouse(x, y):
     # dy: delta Y (pixels down)
     # dz: delta Z (scroll wheel, positive = up, negative = down)
     # dw: idfk what this does
-    # button_state: 0 (none), 1 (left click), 2 (right click), etc.
+    # button_state: 0 (none), 1 (left click), 2 (right click), 4 middle click
     # session.console.mouse.put_mouse_event(dx=50, dy=50, dz=0, button_state=0)
     session.console.mouse.put_mouse_event(dx=x, dy=y, dz=0, dw=0,button_state=0)
 
 def click_mouse(type):
-    # button_state: 0 (none), 1 (left click), 2 (right click), etc.
+    # button_state: 0 (none), 1 (left click), 2 (right click), 4 mclick
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=type)
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=0) # unclick
 
