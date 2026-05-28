@@ -158,21 +158,24 @@ def add_sys_message(message): # add system message
 def get_key_scancode(keyname):
     return KEY_MAP.get(keyname.lower(), None)
 
+def generate_break_codes(scancode_list):
+    if len(scancode_list) >= 2 and scancode_list[0] == 0xE0:
+        return [0xE0, scancode_list[1] + 0x80]
+    return [code + 0x80 for code in reversed(scancode_list)]
+
 def press_key(scancode_input, shift=False):
     if not scancode_input:
         return
     scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
     final_make_codes = [42] + scancode_list if shift else scancode_list
-    
+
     session.console.keyboard.put_scancodes(final_make_codes)
     time.sleep(0.05)
-    break_codes = []
-    for code in reversed(scancode_list):
-        break_codes.append(code + 0x80)
-        
+
+    break_codes = generate_break_codes(scancode_list)
     if shift:
-        break_codes.append(42 + 0x80) 
-        
+        break_codes.append(42 + 0x80)
+
     session.console.keyboard.put_scancodes(break_codes)
     print(f"Sent scancodes: {final_make_codes} and {break_codes}")
 
