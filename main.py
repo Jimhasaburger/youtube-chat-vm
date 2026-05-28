@@ -120,7 +120,7 @@ def check_what_command(message):
             else:
                 add_sys_message("Usage: !move <x> <y>")
         
-        case "!move":
+        case "!scroll":
             if len(args) == 1:
                 try:
                     num = int(args[0])
@@ -129,7 +129,7 @@ def check_what_command(message):
                     add_sys_message("Error: Must be a number.")
             else:
                 add_sys_message("Usage: !scroll <num>")
-        
+
         case "!click":
             click_mouse(1)
         case "!rclick":
