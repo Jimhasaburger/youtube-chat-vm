@@ -119,7 +119,10 @@ def check_what_command(message):
                     add_sys_message("Error: X and Y must be numbers.")
             else:
                 add_sys_message("Usage: !move <x> <y>")
-        
+        case "!click":
+            click_mouse(1)
+        case "!click":
+            click_mouse(2)
         case _:
             add_sys_message("Unknown Command!")
 
@@ -172,6 +175,10 @@ def move_mouse(x, y):
     # button_state: 0 (none), 1 (left click), 2 (right click), etc.
     # session.console.mouse.put_mouse_event(dx=50, dy=50, dz=0, button_state=0)
     session.console.mouse.put_mouse_event(dx=x, dy=y, dz=0, dw=0,button_state=0)
+
+def click_mouse(type):
+    # button_state: 0 (none), 1 (left click), 2 (right click), etc.
+    session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=type)
 
 @app.route("/")
 def index():
