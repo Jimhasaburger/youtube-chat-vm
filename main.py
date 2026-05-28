@@ -119,6 +119,17 @@ def check_what_command(message):
                     add_sys_message("Error: X and Y must be numbers.")
             else:
                 add_sys_message("Usage: !move <x> <y>")
+        
+        case "!move":
+            if len(args) == 1:
+                try:
+                    num = int(args[0])
+                    scroll_mouse(num)
+                except ValueError:
+                    add_sys_message("Error: Must be a number.")
+            else:
+                add_sys_message("Usage: !scroll <num>")
+        
         case "!click":
             click_mouse(1)
         case "!rclick":
@@ -180,6 +191,10 @@ def click_mouse(type):
     # button_state: 0 (none), 1 (left click), 2 (right click), etc.
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=type)
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=0, dw=0,button_state=0) # unclick
+
+def scroll_mouse(num):
+    # dz: delta Z (scroll wheel, positive = up, negative = down)
+    session.console.mouse.put_mouse_event(dx=0, dy=0, dz=num, dw=0,button_state=0)
 
 @app.route("/")
 def index():
