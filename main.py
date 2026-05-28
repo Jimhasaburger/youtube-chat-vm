@@ -88,9 +88,10 @@ def check_what_command(message):
             if args:
                 text_to_type = " ".join(args)
                 for char in text_to_type:
-                    scancode = get_key_scancode(char)
+                    is_upper = char.isupper()
+                    scancode = get_key_scancode(char.lower())
                     if scancode:
-                        press_key(scancode)
+                        press_key(scancode, shift=is_upper)
             else:
                 add_sys_message("Usage: !type <text>")
 
@@ -98,9 +99,10 @@ def check_what_command(message):
             if args:
                 text_to_type = " ".join(args)
                 for char in text_to_type:
-                    scancode = get_key_scancode(char)
+                    is_upper = char.isupper()
+                    scancode = get_key_scancode(char.lower())
                     if scancode:
-                        press_key(scancode)
+                        press_key(scancode, shift=is_upper)
                 
                 # Press Enter after typing
                 enter_code = get_key_scancode("enter")
@@ -154,25 +156,19 @@ def add_sys_message(message): # add system message
 def get_key_scancode(keyname):
     return KEY_MAP.get(keyname.lower(), None)
 
-def press_key(scancode_input):
+def press_key(scancode_input, shift=False):
     if not scancode_input:
         return
-    scancode_list = []
-    items_to_process = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    for item in items_to_process:
-        if isinstance(item, list):
-            scancode_list.extend(item)
-        elif item is not None:
-            scancode_list.append(item)
-    session.console.keyboard.put_scancodes(scancode_list)
+    scancodes = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+    final_make_codes = [0x2A] + scancodes if shift else scancodes
+    session.console.keyboard.put_scancodes(final_make_codes)
     time.sleep(0.05)
     break_codes = []
-    for code in scancode_list:
-        if code == 0xE0:
-            break_codes.append(code)
-        else:
-            break_codes.append(code + 0x80)
-            
+    for code in reversed(scancodes):
+        break_codes.append(code + 0x80)
+    if shift:
+        break_codes.append(0xAA)
+    session.console.keyboard.put_scancodes(break_codes)      
     session.console.keyboard.put_scancodes(break_codes)
     print(f"Sent scancodes: {scancode_list} and {break_codes}")
 
