@@ -163,13 +163,15 @@ def press_key(scancode_input):
     print(f"Sent scancodes: {scancode_list} and {break_codes}")
 
 def move_mouse(x, y):
+    # ignore this this is just so i know how to use mouse
     # Move the mouse relatively and simulate button clicks
     # dx: delta X (pixels right)
     # dy: delta Y (pixels down)
     # dz: delta Z (scroll wheel, positive = up, negative = down)
+    # dw: idfk what this does
     # button_state: 0 (none), 1 (left click), 2 (right click), etc.
     # session.console.mouse.put_mouse_event(dx=50, dy=50, dz=0, button_state=0)
-    session.console.mouse.put_mouse_event(dx=x, dy=y, dz=0, button_state=0)
+    session.console.mouse.put_mouse_event(dx=x, dy=y, dz=0, dw=0,button_state=0)
 
 @app.route("/")
 def index():
