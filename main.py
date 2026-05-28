@@ -169,26 +169,30 @@ def press_key(scancode_input, shift=False):
             else:
                 result.append(item)
         return result
+
     raw_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    flat_list = flatten(raw_list)
-    clean_list = [int(code) for code in flat_list if isinstance(code, (int, float))]
+    clean_list = [int(code) for code in flatten(raw_list) if isinstance(code, (int, float))]
     
     if not clean_list:
         return
+    final_make_codes = [42] + clean_list if shift else clean_list
+    break_codes = []
+    if shift:
+        break_codes.append(42 + 0x80)
+    for code in reversed(clean_list):
+        if code == 224:
+            break_codes.append(224)
+        else:
+            break_codes.append(code + 0x80)
 
     try:
-        final_make_codes = [42] + clean_list if shift else clean_list
         session.console.keyboard.put_scancodes(final_make_codes)
         time.sleep(0.05)
-        
-        break_codes = [code + 0x80 for code in reversed(clean_list)]
-        if shift:
-            break_codes.append(42 + 0x80) 
-            
         session.console.keyboard.put_scancodes(break_codes)
     except Exception as e:
         print(f"VirtualBox Error: {e}")
-    
+
+
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
     # Move the mouse relatively and simulate button clicks
