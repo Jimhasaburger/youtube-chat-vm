@@ -121,7 +121,7 @@ def check_what_command(message):
                 add_sys_message("Usage: !move <x> <y>")
         case "!click":
             click_mouse(1)
-        case "!click":
+        case "!rclick":
             click_mouse(2)
         case _:
             add_sys_message("Unknown Command!")
