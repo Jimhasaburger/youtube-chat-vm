@@ -159,39 +159,22 @@ def get_key_scancode(keyname):
     return KEY_MAP.get(keyname.lower(), None)
 
 def press_key(scancode_input, shift=False):
-    if scancode_input is None:
+    if not scancode_input:
         return
-    def flatten(items):
-        result = []
-        for item in items:
-            if isinstance(item, list):
-                result.extend(flatten(item))
-            else:
-                result.append(item)
-        return result
-
-    raw_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    clean_list = [int(code) for code in flatten(raw_list) if isinstance(code, (int, float))]
+    scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+    final_make_codes = [42] + scancode_list if shift else scancode_list
     
-    if not clean_list:
-        return
-    final_make_codes = [42] + clean_list if shift else clean_list
+    session.console.keyboard.put_scancodes(final_make_codes)
+    time.sleep(0.05)
     break_codes = []
+    for code in reversed(scancode_list):
+        break_codes.append(code + 0x80)
+        
     if shift:
-        break_codes.append(42 + 0x80)
-    for code in reversed(clean_list):
-        if code == 224:
-            break_codes.append(224)
-        else:
-            break_codes.append(code + 0x80)
-
-    try:
-        session.console.keyboard.put_scancodes(final_make_codes)
-        time.sleep(0.05)
-        session.console.keyboard.put_scancodes(break_codes)
-    except Exception as e:
-        print(f"VirtualBox Error: {e}")
-
+        break_codes.append(42 + 0x80) 
+        
+    session.console.keyboard.put_scancodes(break_codes)
+    print(f"Sent scancodes: {final_make_codes} and {break_codes}")
 
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
