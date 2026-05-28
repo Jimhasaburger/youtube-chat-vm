@@ -160,10 +160,18 @@ def get_key_scancode(keyname):
 
 def press_key(scancode_input, shift=False):
     if scancode_input is None:
-        print("Invalid key ignored.")
         return
-    scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    clean_list = [int(code) for code in scancode_list if code is not None]
+    def flatten(items):
+        result = []
+        for item in items:
+            if isinstance(item, list):
+                result.extend(flatten(item))
+            else:
+                result.append(item)
+        return result
+    raw_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+    flat_list = flatten(raw_list)
+    clean_list = [int(code) for code in flat_list if isinstance(code, (int, float))]
     
     if not clean_list:
         return
@@ -179,7 +187,7 @@ def press_key(scancode_input, shift=False):
             
         session.console.keyboard.put_scancodes(break_codes)
     except Exception as e:
-        print(f"VirtualBox communication error: {e}")
+        print(f"VirtualBox Error: {e}")
     
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
