@@ -108,8 +108,22 @@ def check_what_command(message):
                     press_key(enter_code)
             else:
                 add_sys_message("Usage: !send <text>")
+        
+        case "!move":
+            if len(args) == 2:
+                try:
+                    x = int(args[0])
+                    y = int(args[1])
+                    move_mouse(x, y)
+                except ValueError:
+                    add_sys_message("Error: X and Y must be numbers.")
+            else:
+                add_sys_message("Usage: !move <x> <y>")
+        
         case _:
             add_sys_message("Unknown Command!")
+
+
 def add_sys_message(message): # add system message
     global chat_history
     msg_data = {
@@ -147,6 +161,15 @@ def press_key(scancode_input):
             
     session.console.keyboard.put_scancodes(break_codes)
     print(f"Sent scancodes: {scancode_list} and {break_codes}")
+
+def move_mouse(x, y):
+    # Move the mouse relatively and simulate button clicks
+    # dx: delta X (pixels right)
+    # dy: delta Y (pixels down)
+    # dz: delta Z (scroll wheel, positive = up, negative = down)
+    # button_state: 0 (none), 1 (left click), 2 (right click), etc.
+    # session.console.mouse.put_mouse_event(dx=50, dy=50, dz=0, button_state=0)
+    session.console.mouse.put_mouse_event(dx=x, dy=y, dz=0, button_state=0)
 
 @app.route("/")
 def index():
