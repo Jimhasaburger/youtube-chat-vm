@@ -159,23 +159,28 @@ def get_key_scancode(keyname):
     return KEY_MAP.get(keyname.lower(), None)
 
 def press_key(scancode_input, shift=False):
-    if not scancode_input:
+    if scancode_input is None:
+        print("Invalid key ignored.")
         return
     scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    final_make_codes = [42] + scancode_list if shift else scancode_list
+    clean_list = [int(code) for code in scancode_list if code is not None]
     
-    session.console.keyboard.put_scancodes(final_make_codes)
-    time.sleep(0.05)
-    break_codes = []
-    for code in reversed(scancode_list):
-        break_codes.append(code + 0x80)
-        
-    if shift:
-        break_codes.append(42 + 0x80) 
-        
-    session.console.keyboard.put_scancodes(break_codes)
-    print(f"Sent scancodes: {final_make_codes} and {break_codes}")
+    if not clean_list:
+        return
 
+    try:
+        final_make_codes = [42] + clean_list if shift else clean_list
+        session.console.keyboard.put_scancodes(final_make_codes)
+        time.sleep(0.05)
+        
+        break_codes = [code + 0x80 for code in reversed(clean_list)]
+        if shift:
+            break_codes.append(42 + 0x80) 
+            
+        session.console.keyboard.put_scancodes(break_codes)
+    except Exception as e:
+        print(f"VirtualBox communication error: {e}")
+    
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
     # Move the mouse relatively and simulate button clicks
