@@ -159,18 +159,20 @@ def get_key_scancode(keyname):
 def press_key(scancode_input, shift=False):
     if not scancode_input:
         return
-    scancodes = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    final_make_codes = [0x2A] + scancodes if shift else scancodes
+    scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+    final_make_codes = [42] + scancode_list if shift else scancode_list
+    
     session.console.keyboard.put_scancodes(final_make_codes)
     time.sleep(0.05)
     break_codes = []
-    for code in reversed(scancodes):
+    for code in reversed(scancode_list):
         break_codes.append(code + 0x80)
+        
     if shift:
-        break_codes.append(0xAA)
-    session.console.keyboard.put_scancodes(break_codes)      
+        break_codes.append(42 + 0x80) 
+        
     session.console.keyboard.put_scancodes(break_codes)
-    print(f"Sent scancodes: {scancode_list} and {break_codes}")
+    print(f"Sent scancodes: {final_make_codes} and {break_codes}")
 
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
