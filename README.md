@@ -10,8 +10,10 @@ of course. use pull requests.
 
 # setup
 get virtualbox. 
-you will need to run:
+you will need to run these (idk which needed!):
 ```
+pip install pyvbox
+pip install pyvirtualbox
 pip install virtualbox
 ```
 then edit config.json
