@@ -158,31 +158,47 @@ def add_sys_message(message): # add system message
     }
     chat_history.append(msg_data)
     print("System: " + message)
+# warning: idk how to do this part so sorry, ai made it.
+def split_into_keys(scancode_list):
+    """Split a flat scancode list back into individual key sequences."""
+    keys = []
+    i = 0
+    while i < len(scancode_list):
+        if scancode_list[i] == 224 and i + 1 < len(scancode_list):  # extended key (0xE0)
+            keys.append([224, scancode_list[i + 1]])
+            i += 2
+        else:
+            keys.append([scancode_list[i]])
+            i += 1
+    return keys
 
-def get_key_scancode(keyname):
-    return KEY_MAP.get(keyname.lower(), None)
-
-def generate_break_codes(scancode_list):
-    if len(scancode_list) >= 2 and scancode_list[0] == 0xE0:
-        return [0xE0, scancode_list[1] + 0x80]
-    return [code + 0x80 for code in reversed(scancode_list)]
+def generate_break_code(key_sequence):
+    """Generate break codes for a single key sequence."""
+    if len(key_sequence) == 2 and key_sequence[0] == 224:  # extended key
+        return [224, key_sequence[1] + 128]
+    return [key_sequence[0] + 128]
 
 def press_key(scancode_input, shift=False):
     if not scancode_input:
         return
-    scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
-    final_make_codes = [42] + scancode_list if shift else scancode_list
 
-    session.console.keyboard.put_scancodes(final_make_codes)
+    scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+
+    if shift:
+        session.console.keyboard.put_scancodes([42])   # shift make
+
+    # Send all make codes
+    session.console.keyboard.put_scancodes(scancode_list)
     time.sleep(0.05)
 
-    break_codes = generate_break_codes(scancode_list)
+    # Split into individual keys, release in reverse order
+    keys = split_into_keys(scancode_list)
+    for key in reversed(keys):
+        session.console.keyboard.put_scancodes(generate_break_code(key))
+
     if shift:
-        break_codes.append(42 + 0x80)
-
-    session.console.keyboard.put_scancodes(break_codes)
-    print(f"Sent scancodes: {final_make_codes} and {break_codes}")
-
+        session.console.keyboard.put_scancodes([170])  # shift break (42 + 128)
+# ai ends here, but ai overview made the comment because idk how the mouse thing works.
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
     # Move the mouse relatively and simulate button clicks
