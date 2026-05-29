@@ -225,30 +225,31 @@ def scroll_mouse(num):
     # dz: delta Z (scroll wheel, positive = up, negative = down)
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=num, dw=0,button_state=0)
 
+import subprocess
+import os
+
 def revert_vm():
     global session
     try:
+
         session.unlock_machine()
-        vbox = virtualbox.VirtualBox()
-        vm = vbox.find_machine(VM_NAME)
-        if vm.session_state == virtualbox.library.SessionState.locked:
-            print("Shutting down VM for revert...")
-            temp_session = vm.create_session()
-            temp_session.console.power_down()
-            while vm.state != virtualbox.library.MachineState.powered_off:
-                time.sleep(1)
-            temp_session.unlock_machine()
-        latest = vm.current_snapshot
         
-        if latest:
-            print(f"Reverting to {latest.name}...")
-            vm.restore_snapshot(latest)
-            add_sys_message(f"Reverted to {latest.name}!")
-        else:
-            add_sys_message("No snapshots available!")
-            
-        vm.lock_machine(session, virtualbox.library.LockType.shared)
+        print("Shutting down VM for revert...")
+        subprocess.run(['VBoxManage', 'controlvm', VM_NAME, 'poweroff'], check=True)
+        print(f"Reverting '{VM_NAME}' to latest snapshot...")
+        subprocess.run(['VBoxManage', 'snapshot', VM_NAME, 'restorecurrent'], check=True)
         
+        add_sys_message("Reverted to latest snapshot successfully!")
+        machine = vbox.find_machine(VM_NAME)
+        machine.lock_machine(session, virtualbox.library.LockType.shared)
+        
+    except subprocess.CalledProcessError as e:
+        print(f"VBoxManage error: {e}")
+        add_sys_message("Revert failed due to VBoxManage error.")
+    except Exception as e:
+        print(f"Error reverting: {e}")
+        add_sys_message("Revert failed.")
+
     except Exception as e:
         print(f"Error reverting: {e}")
         add_sys_message("Revert failed.")
