@@ -15,6 +15,7 @@ with open('config.json', 'r') as g:
 
 VIDEO_ID = CONFIG.get('videoid')
 VM_NAME = CONFIG.get('vmname')
+VBOXMANAGE = r"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 
 vbox_manager = virtualbox.Manager() # vbox stuff
 vbox = vbox_manager.get_virtualbox()
@@ -144,7 +145,7 @@ def check_what_command(message):
             click_mouse(2)
         case "!mclick":
             click_mouse(4)
-        case "!rebertical":
+        case "!revert":
             revert_vm()
         case _:
             add_sys_message("Unknown Command!")
@@ -228,31 +229,39 @@ def scroll_mouse(num):
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=num, dw=0,button_state=0)
 
 def revert_vm():
-    global session
     try:
-
+        add_sys_message("Reverting VM...")
+        
         session.unlock_machine()
         
-        print("Shutting down VM for revert...")
-        subprocess.run(['VBoxManage', 'controlvm', VM_NAME, 'poweroff'], check=True)
-        print(f"Reverting '{VM_NAME}' to latest snapshot...")
-        subprocess.run(['VBoxManage', 'snapshot', VM_NAME, 'restorecurrent'], check=True)
+        result = subprocess.run(
+            [VBOXMANAGE, "controlvm", VM_NAME, "poweroff"],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"Poweroff warning (may already be off): {result.stderr.strip()}")
         
-        add_sys_message("Reverted to latest snapshot successfully!")
-        machine = vbox.find_machine(VM_NAME)
+        time.sleep(2)
+        
+        subprocess.run(
+            [VBOXMANAGE, "snapshot", VM_NAME, "restorecurrent"],
+            check=True, capture_output=True
+        )
+        time.sleep(2)
+        
+        subprocess.run(
+            [VBOXMANAGE, "startvm", VM_NAME, "--type", "gui"],
+            check=True, capture_output=True
+        )
+        time.sleep(5)
+        
         machine.lock_machine(session, virtualbox.library.LockType.shared)
         
-    except subprocess.CalledProcessError as e:
-        print(f"VBoxManage error: {e}")
-        add_sys_message("Revert failed due to VBoxManage error.")
-    except Exception as e:
-        print(f"Error reverting: {e}")
-        add_sys_message("Revert failed.")
-
-    except Exception as e:
-        print(f"Error reverting: {e}")
-        add_sys_message("Revert failed.")
+        add_sys_message("VM reverted and restarted successfully.")
         
+    except subprocess.CalledProcessError as e:
+        print(f"VBoxManage error: {e.stderr.strip() if e.stderr else e}")
+        add_sys_message("Revert failed due to VBoxManage error.")
     except Exception as e:
         print(f"Error reverting: {e}")
         add_sys_message("Revert failed.")
