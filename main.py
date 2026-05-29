@@ -6,6 +6,8 @@ import uuid
 import virtualbox
 import time
 import json
+import subprocess
+import os
 
 # edit this config file!!!!
 with open('config.json', 'r') as g:
@@ -224,9 +226,6 @@ def click_mouse(type):
 def scroll_mouse(num):
     # dz: delta Z (scroll wheel, positive = up, negative = down)
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=num, dw=0,button_state=0)
-
-import subprocess
-import os
 
 def revert_vm():
     global session
