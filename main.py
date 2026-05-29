@@ -142,6 +142,8 @@ def check_what_command(message):
             click_mouse(2)
         case "!mclick":
             click_mouse(4)
+        case "!rebertical":
+            revert_vm()
         case _:
             add_sys_message("Unknown Command!")
 
@@ -222,6 +224,38 @@ def click_mouse(type):
 def scroll_mouse(num):
     # dz: delta Z (scroll wheel, positive = up, negative = down)
     session.console.mouse.put_mouse_event(dx=0, dy=0, dz=num, dw=0,button_state=0)
+
+def revert_vm():
+    global session
+    try:
+        session.unlock_machine()
+        vbox = virtualbox.VirtualBox()
+        vm = vbox.find_machine(VM_NAME)
+        
+        if vm.session_state == virtualbox.library.SessionState.locked:
+            print("Shutting down VM for revert...")
+            temp_session = vm.create_session()
+            temp_session.console.power_down()
+            while vm.state != virtualbox.library.MachineState.powered_off:
+                time.sleep(1)
+            temp_session.unlock_machine()
+        
+        if vm.snapshot_count > 0:
+            latest = vm.snapshot_list[0]
+            while latest.children:
+                latest = latest.children[-1]
+                
+            print(f"Reverting to {latest.name}...")
+            vm.restore_snapshot(latest)
+            add_sys_message(f"Reverted to {latest.name}!")
+        else:
+            add_sys_message("No snapshots available!")
+            
+        vm.lock_machine(session, virtualbox.library.LockType.shared)
+        
+    except Exception as e:
+        print(f"Error reverting: {e}")
+        add_sys_message("Revert failed.")
 
 @app.route("/")
 def index():
