@@ -158,7 +158,11 @@ def add_sys_message(message): # add system message
     }
     chat_history.append(msg_data)
     print("System: " + message)
-# warning: idk how to do this part so sorry, ai made it.
+
+def get_key_scancode(keyname):
+    return KEY_MAP.get(keyname.lower(), None)
+# ai made this part idk how to do key stuff.
+
 def split_into_keys(scancode_list):
     """Split a flat scancode list back into individual key sequences."""
     keys = []
@@ -198,7 +202,7 @@ def press_key(scancode_input, shift=False):
 
     if shift:
         session.console.keyboard.put_scancodes([170])  # shift break (42 + 128)
-# ai ends here, but ai overview made the comment because idk how the mouse thing works.
+#ai ends here
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
     # Move the mouse relatively and simulate button clicks
