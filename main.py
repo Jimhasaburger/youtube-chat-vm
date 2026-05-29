@@ -231,7 +231,6 @@ def revert_vm():
         session.unlock_machine()
         vbox = virtualbox.VirtualBox()
         vm = vbox.find_machine(VM_NAME)
-        
         if vm.session_state == virtualbox.library.SessionState.locked:
             print("Shutting down VM for revert...")
             temp_session = vm.create_session()
@@ -239,12 +238,9 @@ def revert_vm():
             while vm.state != virtualbox.library.MachineState.powered_off:
                 time.sleep(1)
             temp_session.unlock_machine()
+        latest = vm.current_snapshot
         
-        if vm.snapshot_count > 0:
-            latest = vm.snapshot_list[0]
-            while latest.children:
-                latest = latest.children[-1]
-                
+        if latest:
             print(f"Reverting to {latest.name}...")
             vm.restore_snapshot(latest)
             add_sys_message(f"Reverted to {latest.name}!")
@@ -252,6 +248,10 @@ def revert_vm():
             add_sys_message("No snapshots available!")
             
         vm.lock_machine(session, virtualbox.library.LockType.shared)
+        
+    except Exception as e:
+        print(f"Error reverting: {e}")
+        add_sys_message("Revert failed.")
         
     except Exception as e:
         print(f"Error reverting: {e}")
