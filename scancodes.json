@@ -106,7 +106,5 @@
     "search":     [224, 101],
     "favorites":  [224, 102],
     "homepage":   [224, 50],
-    "sysrq":      [224, 55],
-    "numlock":    [69],
-    "scrolllock": [70]
+    "sysrq":      [224, 55]
 }
