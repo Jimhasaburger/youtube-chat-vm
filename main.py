@@ -64,6 +64,24 @@ def check_if_command(message):
 
 def check_what_command(message):
     parts = message.strip().split()
+    idxs = []
+    
+    for i,v in enumerate(parts):
+        if check_if_command(v): idxs.append(i)
+    print(idxs)
+    
+    for i, v in enumerate(idxs):
+        print (i, v)
+        newparts = []
+        if i == len(idxs)-1:
+            newparts = parts[v:len(parts)]
+        else:
+            newparts = parts[v:idxs[i+1]]
+        print(newparts)
+        process_command_array(newparts)
+
+def process_command_array(parts):
+    # parts = message.strip().split()
     
     if not parts:
         return
