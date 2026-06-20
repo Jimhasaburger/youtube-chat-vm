@@ -1,6 +1,5 @@
 # youtube-chat-vm
 script to do Chat uses windows!
-pls star plss
 
 # can i use this?
 yes but please credit me.
