@@ -18,7 +18,4 @@ pip install virtualbox
 pip install pytchat
 ```
 then edit config.json
-and run the script.
-
-# NOTICE:
-i may or may not turn this to lua soon. i know lua more.
+and run the script
