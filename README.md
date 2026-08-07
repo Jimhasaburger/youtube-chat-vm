@@ -63,6 +63,10 @@ COMMANDS:
 !mclick
 
 !revert
+
+!restart
+
+!start
 ```
 
 # KNOWN BUGS:

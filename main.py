@@ -21,7 +21,23 @@ vbox_manager = virtualbox.Manager() # vbox stuff
 vbox = vbox_manager.get_virtualbox()
 machine = vbox.find_machine(VM_NAME)
 session = virtualbox.Session()
-machine.lock_machine(session, virtualbox.library.LockType.shared)
+
+
+def initialize_vm_session():
+    global session
+    try:
+        if str(machine.state) in ("PoweredOff", "Aborted"):
+            print(f"VM '{VM_NAME}' is powered off. Launching...")
+            progress = machine.launch_vm_process(session, "gui", [])
+            progress.wait_for_completion(-1)
+            print("VM launched and session locked.")
+        else:
+            machine.lock_machine(session, virtualbox.library.LockType.shared)
+            print("Connected to running VM session.")
+    except Exception as e:
+        print(f"Initialization error: {e}")
+
+initialize_vm_session()
 
 log = logging.getLogger('werkzeug') # make flask shut up
 log.setLevel(logging.ERROR)
@@ -165,6 +181,15 @@ def process_command_array(parts):
             click_mouse(4)
         case "!revert":
             revert_vm()
+        case "!restart":
+            restart_vm()
+        case "!start":
+            if str(machine.state) in ("PoweredOff", "Aborted", "Saved"):
+                add_sys_message("Starting VM...")
+                start_vm()
+                add_sys_message("Started!")
+            else:
+                add_sys_message("VM is already running.")
         case _:
             add_sys_message("Unknown Command!")
 
@@ -283,6 +308,68 @@ def revert_vm():
     except Exception as e:
         print(f"Error reverting: {e}")
         add_sys_message("Revert failed.")
+
+def wait_for_unlock(machine, timeout=15):
+    start = time.time()
+    while time.time() - start < timeout:
+        state = str(machine.session_state)
+        if state == "Unlocked":
+            return True
+        time.sleep(0.3)
+    return False
+
+def start_vm():
+    global session
+
+    session = virtualbox.Session()
+
+    if str(machine.state) in ("PoweredOff", "Aborted", "Saved"):
+        last_exc = None
+        for attempt in range(5):
+            try:
+                progress = machine.launch_vm_process(session, "gui", [])
+                progress.wait_for_completion(-1)
+                last_exc = None
+                break
+            except Exception as e:
+                last_exc = e
+                print(f"launch_vm_process attempt {attempt+1} failed: {e}")
+                time.sleep(1)
+        if last_exc:
+            raise last_exc
+    else:
+        # already running somehow, just lock onto it
+        machine.lock_machine(session, virtualbox.library.LockType.shared)
+
+def restart_vm():
+    global session
+
+    try:
+        if str(machine.state) != "PoweredOff":
+            add_sys_message("Shutting down VM...")
+
+            progress = session.console.power_down()
+            progress.wait_for_completion(-1)
+
+            add_sys_message("VM now off...")
+
+        try:
+            session.unlock_machine()
+        except Exception as e:
+            print(f"Session unlock: {e}")
+
+        if not wait_for_unlock(machine):
+            print("Warning: machine did not Unlock in time")
+
+        add_sys_message("Turning on...")
+
+        start_vm()
+
+        add_sys_message("Turned on!")
+
+    except Exception as e:
+        print(f"Error restarting VM: {e}")
+        add_sys_message("Failed")
 
 @app.route("/")
 def index():
