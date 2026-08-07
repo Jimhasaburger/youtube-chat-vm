@@ -29,7 +29,7 @@ pip install .
 ```
 now you have vboxapi. do this:
 ```
-pip install virtualbox pyvbox pytchat pywin32
+pip install virtualbox pyvbox pytchat pywin32 flask
 ```
 then edit config.json
 and run the script
