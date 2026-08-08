@@ -71,4 +71,4 @@ COMMANDS:
 
 # KNOWN BUGS:
 
-- chat overlay does some weird scroll stuff
+- currently none
