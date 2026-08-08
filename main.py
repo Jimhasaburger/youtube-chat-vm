@@ -115,10 +115,10 @@ def process_command_array(parts):
             else:
                 add_sys_message("Specify a key.")
         case "!repeat":
-            if len(args) == 3: 
+            if len(args) == 2: 
                 try:
-                    key = int(args[1])
-                    times = int(args[2])
+                    key = int(args[0])
+                    times = int(args[1])
                     for _ in range(times):
                         press_key(get_key_scancode(key))
                 except Exception as e:
