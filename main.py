@@ -114,6 +114,17 @@ def process_command_array(parts):
                 press_key(get_key_scancode(key_name))
             else:
                 add_sys_message("Specify a key.")
+        case "!repeat":
+            if len(args) == 2:
+                try:
+                    key = int(args[0])
+                    times = int(args[1])
+                    for _ in range(times):
+                        press_key(get_key_scancode(key))
+                except:
+                    add_sys_message("ERROR")
+            else:
+                add_sys_message("Usage: !repeat [key] [times]")
         case "!combo":
             if args:
                 key_names = args

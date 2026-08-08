@@ -46,6 +46,8 @@ COMMANDS:
 
 !key [key_name]
 
+!repeat [key] [times]
+
 !combo [key_names...] (SEPERATE KEYS WITH SPACE!)
 
 !type [text]
