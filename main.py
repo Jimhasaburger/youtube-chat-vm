@@ -117,7 +117,7 @@ def process_command_array(parts):
         case "!repeat":
             if len(args) == 2: 
                 try:
-                    key = int(args[0])
+                    key = args[0]
                     times = int(args[1])
                     for _ in range(times):
                         press_key(get_key_scancode(key))
