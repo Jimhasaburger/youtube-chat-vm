@@ -73,4 +73,5 @@ COMMANDS:
 
 # KNOWN BUGS:
 
-- currently none
+- chatbox randomly scrolls to random places
+- sometimes stops receiving messages from specific people
