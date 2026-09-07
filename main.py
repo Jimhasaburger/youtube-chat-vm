@@ -1,6 +1,7 @@
 import pytchat
 import threading
 from flask import Flask, render_template, jsonify
+from flask_socketio import SocketIO, emit
 import logging
 import uuid
 import virtualbox
@@ -43,9 +44,13 @@ log = logging.getLogger('werkzeug') # make flask shut up
 log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
+# threading mode is important here: eventlet/gevent monkey-patching does not
+# play nicely with the blocking VirtualBox COM calls used elsewhere in this file.
+socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
 
 chat_history = []
 seen_message_ids = set()
+HISTORY_ON_CONNECT = 100  # matches MAX_MESSAGES in static/script.js
 
 with open('scancodes.json', 'r') as f:
     KEY_MAP = json.load(f)
@@ -68,6 +73,8 @@ def fetch_chat():
                 }
                 chat_history.append(msg_data)
                 seen_message_ids.add(c.id)
+                socketio.emit('chat_message', msg_data)  # push live, no polling needed
+
                 if check_if_command(c.message) == True: # checks if command
                     check_what_command(c.message)       # checks which command
                 
@@ -218,6 +225,7 @@ def add_sys_message(message): # add system message
         "is_moderator": False
     }
     chat_history.append(msg_data)
+    socketio.emit('chat_message', msg_data)
     print("System: " + message)
 
 def get_key_scancode(keyname):
@@ -390,8 +398,21 @@ def index():
 
 @app.route("/chatjson")
 def chatjson():
+    # kept only for manual debugging in a browser tab; the overlay itself
+    # no longer polls this, so it can't "replay" old history anymore.
     return jsonify({
         "messages": chat_history,
+        "show_pfp": True,
+        "status": "Live"
+    })
+
+@socketio.on('connect')
+def handle_connect():
+    # fires once per new browser connection (page load / OBS source reload).
+    # sends the recent backlog ONE time so a fresh viewer has context, then
+    # goes quiet — no further history is ever resent on this connection.
+    emit('history', {
+        "messages": chat_history[-HISTORY_ON_CONNECT:],
         "show_pfp": True,
         "status": "Live"
     })
@@ -399,4 +420,4 @@ def chatjson():
 if __name__ == "__main__":
     thread = threading.Thread(target=fetch_chat, daemon=True) 
     thread.start()
-    app.run(debug=False, port=5000)
+    socketio.run(app, debug=False, port=5000)
