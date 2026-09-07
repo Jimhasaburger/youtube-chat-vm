@@ -3,7 +3,6 @@ script to do Chat uses windows!
 
 # can i use this?
 yes but please credit me.
-you can also just use the chatbox by switching to the chatbox branch. (the chatbox branch doesnt get updated often because i dont update the chatbox often)
 
 if you dont know how to credit me you can use these:
 ```
