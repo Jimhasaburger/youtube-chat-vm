@@ -74,3 +74,15 @@ COMMANDS:
 
 - chatbox randomly scrolls to random places
 - sometimes stops receiving messages from specific people
+
+# What is chat uses windows?
+
+people on youtube run their own scripts and vms and make youtube chat use windows, a popular youtubers are: vlc2, halo hunter, reallyiron, and some others i dont know
+
+i was inspired by halo hunter (first person i saw doing this)
+
+so i made my own script, 1.0. but it was ai generated...
+
+this is 2.0, its not ai. and its also simpler to use
+
+Also basically the only chat uses windows script thats public.
