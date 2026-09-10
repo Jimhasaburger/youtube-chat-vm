@@ -1,0 +1,6 @@
+- fix bugs
+- add !wait command
+- add a vote system..? with mod bypass on the restart etc commands
+- add a safety list (blocks specific things)
+- add some shortcut commands like !run [program]
+- add toggleable logging of all messages (not a prioritiy)
