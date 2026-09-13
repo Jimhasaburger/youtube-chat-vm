@@ -28,7 +28,7 @@ pip install .
 ```
 now you have vboxapi. do this:
 ```
-pip install virtualbox pyvbox pytchat pywin32 flask socketio
+pip install virtualbox pyvbox pytchat pywin32 flask flask-sock
 ```
 then edit config.json
 and run the script
