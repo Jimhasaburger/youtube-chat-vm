@@ -1,7 +1,7 @@
 import pytchat
 import threading
 from flask import Flask, render_template, jsonify
-from flask_socketio import SocketIO, emit
+from flask_sock import Sock
 import logging
 import uuid
 import virtualbox
@@ -44,9 +44,9 @@ log = logging.getLogger('werkzeug') # make flask shut up
 log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
-# threading mode is important here: eventlet/gevent monkey-patching does not
-# play nicely with the blocking VirtualBox COM calls used elsewhere in this file.
-socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
+sock = Sock(app)
+
+connected_clients = set()
 
 chat_history = []
 seen_message_ids = set()
@@ -73,7 +73,7 @@ def fetch_chat():
                 }
                 chat_history.append(msg_data)
                 seen_message_ids.add(c.id)
-                socketio.emit('chat_message', msg_data)  # push live, no polling needed
+                broadcast('chat_message', msg_data)  # push live, no polling needed
 
                 if check_if_command(c.message) == True: # checks if command
                     check_what_command(c.message)       # checks which command
@@ -81,6 +81,19 @@ def fetch_chat():
                 if len(chat_history) > 500:             # removes old messages
                     old_msg = chat_history.pop(0)
                     seen_message_ids.discard(old_msg['id'])
+
+def broadcast(event, data):
+    """Send a JSON message to every connected WebSocket client."""
+    msg = json.dumps({"event": event, "data": data})
+    dead = []
+    for ws in connected_clients:
+        try:
+            ws.send(msg)
+        except Exception:
+            dead.append(ws)
+    for ws in dead:
+        connected_clients.discard(ws)
+
 
 def check_if_command(message):
     return message.startswith("!")
@@ -225,7 +238,7 @@ def add_sys_message(message): # add system message
         "is_moderator": False
     }
     chat_history.append(msg_data)
-    socketio.emit('chat_message', msg_data)
+    broadcast('chat_message', msg_data)
     print("System: " + message)
 
 def get_key_scancode(keyname):
@@ -406,18 +419,30 @@ def chatjson():
         "status": "Live"
     })
 
-@socketio.on('connect')
-def handle_connect():
-    # fires once per new browser connection (page load / OBS source reload).
-    # sends the recent backlog ONE time so a fresh viewer has context, then
-    # goes quiet — no further history is ever resent on this connection.
-    emit('history', {
-        "messages": chat_history[-HISTORY_ON_CONNECT:],
-        "show_pfp": True,
-        "status": "Live"
-    })
+@sock.route('/ws')
+def ws_route(ws):
+    connected_clients.add(ws)
+    try:
+        # Send history once on connect
+        ws.send(json.dumps({
+            "event": "history",
+            "data": {
+                "messages": chat_history[-HISTORY_ON_CONNECT:],
+                "show_pfp": True,
+                "status": "Live"
+            }
+        }))
+        # Keep connection alive; we only push, never receive
+        while True:
+            msg = ws.receive(timeout=1)
+            if msg is None:
+                break
+    except Exception:
+        pass
+    finally:
+        connected_clients.discard(ws)
 
 if __name__ == "__main__":
     thread = threading.Thread(target=fetch_chat, daemon=True) 
     thread.start()
-    socketio.run(app, debug=False, port=5000)
+    app.run(debug=False, port=5000)

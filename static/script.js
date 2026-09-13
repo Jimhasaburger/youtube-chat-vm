@@ -115,36 +115,47 @@ let renderedIds = new Set();
     }
 
     // --- WebSocket wiring ---
-    // The server now pushes messages instead of us polling /chatjson.
-    // Two events only:
+    // The server pushes messages over a plain WebSocket.
+    // Two events:
     //   'history'      -> sent ONCE by the server right after connect, with
-    //                      the recent backlog. We render it once and never again,
-    //                      even if the socket reconnects later in this same tab.
+    //                      the recent backlog.
     //   'chat_message' -> a single live message, pushed as it arrives.
-    const socket = io();
     let historyLoaded = false;
+    let socket;
 
-    socket.on("history", (d) => {
-        if (historyLoaded) return; // guard: never replay backlog again in this tab
-        historyLoaded = true;
+    function connect() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        socket = new WebSocket(`${proto}//${location.host}/ws`);
 
-        const nearBottom = true; // first paint: always land at the bottom
-        let added = false;
-        (d.messages || []).forEach(m => {
-            if (renderOneMessage(m, d.show_pfp, nearBottom)) added = true;
-        });
+        socket.onmessage = (e) => {
+            const { event, data } = JSON.parse(e.data);
 
-        trimOverflow();
-        if (added) chatEl.scrollTop = chatEl.scrollHeight;
-    });
+            if (event === "history") {
+                if (historyLoaded) return;
+                historyLoaded = true;
 
-    socket.on("chat_message", (m) => {
-        const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 100;
-        const added = renderOneMessage(m, true, nearBottom);
-        if (!added) return;
+                const nearBottom = true;
+                let added = false;
+                (data.messages || []).forEach(m => {
+                    if (renderOneMessage(m, data.show_pfp, nearBottom)) added = true;
+                });
 
-        trimOverflow();
-        if (nearBottom) chatEl.scrollTop = chatEl.scrollHeight;
-    });
+                trimOverflow();
+                if (added) chatEl.scrollTop = chatEl.scrollHeight;
+            }
 
-    socket.on("connect_error", (e) => console.error("Chat socket connect error:", e));
+            if (event === "chat_message") {
+                const nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 100;
+                const added = renderOneMessage(data, true, nearBottom);
+                if (!added) return;
+
+                trimOverflow();
+                if (nearBottom) chatEl.scrollTop = chatEl.scrollHeight;
+            }
+        };
+
+        socket.onclose = () => setTimeout(connect, 2000);
+        socket.onerror = (e) => console.error("Chat socket error:", e);
+    }
+
+    connect();
