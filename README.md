@@ -14,6 +14,9 @@ script originally made by jimhasaburger on github (github.com/jimhasaburger/yout
 
 you absolutely dont need to use these, its enough to give the link or my username.
 
+# if you do not credit you will be in the hall of not crediting my script
+<img width="1251" height="871" alt="image" src="https://github.com/user-attachments/assets/1f49ee6e-e03e-4ab4-a4fe-2d4f1e540ea5" />
+
 # can i help?
 of course. use pull requests.
 
