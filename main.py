@@ -50,40 +50,63 @@ connected_clients = set()
 
 chat_history = []
 seen_message_ids = set()
-HISTORY_ON_CONNECT = 100  # matches MAX_MESSAGES in static/script.js
+HISTORY_ON_CONNECT = 100
 
 with open('scancodes.json', 'r') as f:
     KEY_MAP = json.load(f)
 
 def fetch_chat():
     global chat_history
-    chat = pytchat.create(video_id=VIDEO_ID, interruptable=False)
-    
-    while chat.is_alive():
-        for c in chat.get().sync_items():
-            if c.id not in seen_message_ids:
-                msg_data = {
-                    "id": c.id,
-                    "user": c.author.name,
-                    "text": c.message,
-                    "pfp_url": c.author.imageUrl,
-                    "is_owner": c.author.isChatOwner,
-                    "is_moderator": c.author.isChatModerator,
-                    "timestamp": c.datetime
-                }
-                chat_history.append(msg_data)
-                seen_message_ids.add(c.id)
-                broadcast('chat_message', msg_data)  # push live, no polling needed
 
-                if check_if_command(c.message) == True: # checks if command
-                    check_what_command(c.message)       # checks which command
-                
-                if len(chat_history) > 500:             # removes old messages
-                    old_msg = chat_history.pop(0)
-                    seen_message_ids.discard(old_msg['id'])
+    while True:
+        try:
+            chat = pytchat.create(video_id=VIDEO_ID, interruptable=False)
+            print("[fetch_chat] pytchat session started.")
+
+            while chat.is_alive():
+                try:
+                    items = chat.get().sync_items()
+                except Exception as e:
+                    print(f"[fetch_chat] sync_items() error: {e}")
+                    time.sleep(1)
+                    continue
+
+                for c in items:
+                    try:
+                        if c.id not in seen_message_ids:
+                            msg_data = {
+                                "id": c.id,
+                                "user": c.author.name,
+                                "text": c.message,
+                                "pfp_url": c.author.imageUrl,
+                                "is_owner": c.author.isChatOwner,
+                                "is_moderator": c.author.isChatModerator,
+                                "timestamp": c.datetime
+                            }
+                            chat_history.append(msg_data)
+                            seen_message_ids.add(c.id)
+                            broadcast('chat_message', msg_data)  # push live, no polling needed
+
+                            if check_if_command(c.message) == True: # checks if command
+                                check_what_command(c.message)       # checks which command
+
+                            if len(chat_history) > 500:             # removes old messages
+                                old_msg = chat_history.pop(0)
+                                seen_message_ids.discard(old_msg['id'])
+                    except Exception as e:
+                        # one malformed/unexpected message shouldn't kill the whole loop
+                        print(f"[fetch_chat] error processing message {getattr(c, 'id', '?')}: {e}")
+                        continue
+
+            # chat.is_alive() went False: stream likely ended
+            print("[fetch_chat] chat.is_alive() returned False, session ended.")
+
+        except Exception as e:
+            print(f"[fetch_chat] fatal error in chat session, restarting in 5s: {e}")
+
+        time.sleep(5)
 
 def broadcast(event, data):
-    """Send a JSON message to every connected WebSocket client."""
     msg = json.dumps({"event": event, "data": data})
     dead = []
     for ws in connected_clients:
