@@ -72,8 +72,7 @@ COMMANDS:
 
 # KNOWN BUGS:
 
-- chatbox randomly scrolls to random places
-- sometimes stops receiving messages from specific people
+- chatbox doesnt receive messages for some reason
 
 # What is chat uses windows?
 
