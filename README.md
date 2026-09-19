@@ -56,12 +56,11 @@ Also basically the only chat uses windows script thats public.
 of course. use pull requests.
 
 # commands list for your stream:
-
 ```
 COMMANDS:
 (you can chain them)
 
-!help
+!help (only works if chat overlay is there
 
 !key [key_name]
 
@@ -73,7 +72,7 @@ COMMANDS:
 
 !send [text]
 
-!move [x] [y]
+!move [x] [y] (dont put big numbers, this moves the mouse more then u think. also: y is inverted for sum reason)
 
 !scroll [num]
 
@@ -89,4 +88,3 @@ COMMANDS:
 
 !start
 ```
-
