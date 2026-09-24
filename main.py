@@ -162,8 +162,13 @@ def process_command_array(parts):
                 try:
                     key = args[0]
                     times = int(args[1])
+                    if times > 30:
+                        add_sys_message("Too big of number, repeat has limit 30")
+                        times = 30
+                    
                     for _ in range(times):
                         press_key(get_key_scancode(key))
+                        
                 except Exception as e:
                     print(f"Fehler beim Ausführen: {e}")
                     add_sys_message("ERROR")
