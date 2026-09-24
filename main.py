@@ -462,7 +462,7 @@ def ws_route(ws):
         }))
         # Keep connection alive; we only push, never receive
         while True:
-            msg = ws.receive(timeout=1)
+            msg = ws.receive()
             if msg is None:
                 break
     except Exception:
