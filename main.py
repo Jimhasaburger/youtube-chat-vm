@@ -162,6 +162,10 @@ def process_command_array(parts):
                 try:
                     key = args[0]
                     times = int(args[1])
+                    if times > 25 then
+                        for _ in 25:
+                            press_key(get_key_scancode(key))
+                            add_sys_message("Cannot input larger than 25")
                     for _ in range(times):
                         press_key(get_key_scancode(key))
                 except Exception as e:
