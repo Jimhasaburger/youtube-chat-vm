@@ -38,7 +38,7 @@ you absolutely dont need to use these, its enough to give the link or my usernam
 
 # KNOWN BUGS:
 
-- chatbox doesnt receive messages for some reason
+- none rn
 
 # What is chat uses windows?
 
