@@ -177,41 +177,40 @@ def process_command_array(parts):
 
         case "!combo":
             if args:
-                key_names = args
-                scancodes = [code for key_name in key_names
-                   for code in (get_key_scancode(key_name) or [])]
-                if scancodes:
-                    press_key(scancodes)
-                else:
-                    add_sys_message("Unknown key in combo.")
+                combo(args)
             else:
                 add_sys_message("Specify at least one key.")
+        
         case "!type":
             if args:
-                text_to_type = " ".join(args)
-                for char in text_to_type:
-                    is_upper = char.isupper()
-                    scancode = get_key_scancode(char.lower())
-                    if scancode:
-                        press_key(scancode, shift=is_upper)
+                type_text(" ".join(args))
             else:
                 add_sys_message("Usage: !type <text>")
 
         case "!send":
             if args:
-                text_to_type = " ".join(args)
-                for char in text_to_type:
-                    is_upper = char.isupper()
-                    scancode = get_key_scancode(char.lower())
-                    if scancode:
-                        press_key(scancode, shift=is_upper)
-                
-                # Press Enter after typing
+                type_text(" ".join(args))
+                # press enter
                 enter_code = get_key_scancode("enter")
                 if enter_code:
                     press_key(enter_code)
             else:
                 add_sys_message("Usage: !send <text>")
+
+        case "!run":
+            if args:
+                run_dialog_command(" ".join(args))
+            else:
+                add_sys_message("Usage: !run <thing>")
+
+        case "!cmd":
+            if args:
+                # runs a command in cmd
+                command_to_run = f"cmd /k " + " ".join(args)
+                run_dialog_command(command_to_run)
+            else:
+                add_sys_message("Usage: !cmd <command>")
+
         
         case "!move":
             if len(args) == 2:
@@ -313,6 +312,31 @@ def press_key(scancode_input, shift=False):
     if shift:
         session.console.keyboard.put_scancodes([170])  # shift break (42 + 128)
 #ai ends here
+
+def combo(keys):
+    key_names = keys
+    scancodes = [code for key_name in key_names
+    for code in (get_key_scancode(key_name) or [])]
+        if scancodes:
+            press_key(scancodes)
+        else:
+            add_sys_message("Unknown key in combo.")
+
+def type_text(text):
+    for char in text_to_type:
+        is_upper = char.isupper()
+        scancode = get_key_scancode(char.lower())
+        if scancode:
+            press_key(scancode, shift=is_upper)
+
+def run_dialog_command(thing_to_run):
+    # open windows run dialog
+    combo(["win", "r"]) 
+    time.sleep(0.8) 
+    type_text(thing_to_run)
+    time.sleep(0.2)
+    press_key(get_key_scancode("enter"))
+
 def move_mouse(x, y):
     # ignore this this is just so i know how to use mouse
     # Move the mouse relatively and simulate button clicks
