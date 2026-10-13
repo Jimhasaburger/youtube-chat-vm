@@ -315,8 +315,9 @@ def press_key(scancode_input, shift=False):
 
 def combo(keys):
     key_names = keys
-    scancodes = [code for key_name in key_names
-    for code in (get_key_scancode(key_name) or [])]
+    scancodes = [get_key_scancode(key_name) for key_name in key_names]
+
+    for code in scancodes:
         if scancodes:
             press_key(scancodes)
         else:
