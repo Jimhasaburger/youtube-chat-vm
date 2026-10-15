@@ -87,4 +87,6 @@ COMMANDS:
 !restart
 
 !start
+
+!cmd [text]
 ```
