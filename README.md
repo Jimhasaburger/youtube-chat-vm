@@ -89,4 +89,6 @@ COMMANDS:
 !start
 
 !cmd [text] (opens run and puts cmd - whatever text you put here)
+
+!run [thing to run in win r]
 ```
