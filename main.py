@@ -338,7 +338,7 @@ def combo(keys):
             add_sys_message("Unknown key in combo.")
 
 def type_text(text):
-    for char in text_to_type:
+    for char in text:
         is_upper = char.isupper()
         scancode = get_key_scancode(char.lower())
         if scancode:
