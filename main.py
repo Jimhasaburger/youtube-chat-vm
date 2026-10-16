@@ -295,22 +295,36 @@ def press_key(scancode_input, shift=False):
     if not scancode_input:
         return
 
-    scancode_list = scancode_input if isinstance(scancode_input, list) else [scancode_input]
+    scancode_list = (
+        scancode_input
+        if isinstance(scancode_input, list)
+        else [scancode_input]
+    )
+
+    # Flatten nested scancode lists, then split into individual keys
+    flat_scancodes = []
+
+    for code in scancode_list:
+        if isinstance(code, list):
+            flat_scancodes.extend(code)
+        else:
+            flat_scancodes.append(code)
+
+    keys = split_into_keys(flat_scancodes)
 
     if shift:
-        session.console.keyboard.put_scancodes([42])   # shift make
+        session.console.keyboard.put_scancodes([42])
 
-    # Send all make codes
-    session.console.keyboard.put_scancodes(scancode_list)
+    session.console.keyboard.put_scancodes(flat_scancodes)
     time.sleep(0.05)
 
-    # Split into individual keys, release in reverse order
-    keys = split_into_keys(scancode_list)
     for key in reversed(keys):
-        session.console.keyboard.put_scancodes(generate_break_code(key))
+        session.console.keyboard.put_scancodes(
+            generate_break_code(key)
+        )
 
     if shift:
-        session.console.keyboard.put_scancodes([170])  # shift break (42 + 128)
+        session.console.keyboard.put_scancodes([170])
 #ai ends here
 
 def combo(keys):
