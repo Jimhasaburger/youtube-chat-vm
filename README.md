@@ -1,6 +1,7 @@
 # youtube-chat-vm
-script to do Chat uses windows!
+very simple script to do Chat uses windows!
 
+if you want one thats a bit more advanced, altough a bit less light use YT2VM by reallyiron
 # setup
 get virtualbox if you dont already.
 
